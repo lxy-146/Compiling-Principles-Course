@@ -1,0 +1,42 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+D:/github/Compiling-Principles-Course/ir_generator.h
+iostream
+-
+fstream
+-
+sstream
+-
+string
+-
+vector
+-
+list
+-
+map
+-
+set
+-
+stack
+-
+algorithm
+-
+string
+-
+queue
+-
+
+D:/github/Compiling-Principles-Course/object_generator.cpp
+object_generator.h
+D:/github/Compiling-Principles-Course/object_generator.h
+
+D:/github/Compiling-Principles-Course/object_generator.h
+ir_generator.h
+D:/github/Compiling-Principles-Course/ir_generator.h
+

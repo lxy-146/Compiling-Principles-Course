@@ -9,7 +9,7 @@ private:
 									  { "j!=", "bne " }, { "j<", "blt " }, { "j<=", "ble " },
 									  { "+", "add " }, { "-", "sub " }, { "*", "mul " }, }; // IR的OP到目标代码OP的映射
 
-	map<string,vector<Block> > func_blocks;
+
 	map<string, vector<set<string> > > func_outls;//各函数块中基本块的出口活跃变量集
 	map<string, vector<set<string> > > func_inls;//各函数块中基本块的入口活跃变量集
 	map<string, set<string> > Avalue;
@@ -24,6 +24,7 @@ private:
 	int present_quaternion_index;
 	vector<string>object_codes;
 public:
+    map<string,vector<Block> > func_blocks;
 	ObjectGenerator();
 	void store_reg_var(string reg, string var);//保存寄存器变量
 	void store_oul_var(set<string> outl);//保存出口活跃变量

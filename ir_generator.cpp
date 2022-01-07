@@ -19,7 +19,7 @@ void IRGenerator::emit(string op, string src1, string src2, string des) {
 
 // back_patch
 void IRGenerator::back_patch(list<int> nextList, int quad) {
-    for (auto& nl : nextList) {
+    for (auto &nl : nextList) {
         code[nl].des = to_string(quad);
     }
 }
@@ -28,7 +28,7 @@ void IRGenerator::back_patch(list<int> nextList, int quad) {
 int IRGenerator::get_nextquad() { return code.size(); }
 
 //输出中间代码
-void IRGenerator::output_code(const char* fileName) {
+void IRGenerator::output_code(const char *fileName) {
     ofstream fout;
     fout.open(fileName);
     if (!fout.is_open()) {
@@ -50,22 +50,20 @@ string IRGenerator::get_block_name() { return string("Label") + to_string(name_i
 void IRGenerator::divide_block(vector<pair<int, string> > func_start) {
     for (unsigned int i = 0; i < func_start.size(); ++i) {
         //记录所有基本块的入口点
-        priority_queue<int, vector<int>, greater<int> > baseblock_start;  
+        priority_queue<int, vector<int>, greater<int> > baseblock_start;
         baseblock_start.push(func_start[i].first);
-        int funcblock_end = (i == func_start.size() - 1) ? code.size() : func_start[i+1].first;
+        int funcblock_end = (i == func_start.size() - 1) ? code.size() : func_start[i + 1].first;
         baseblock_start.push(funcblock_end); // 把funcblock的结尾加入
         for (int j = func_start[i].first; j != funcblock_end; j++) {
             if (code[j].op == "j") {
                 baseblock_start.push(atoi(code[j].des.c_str()));
-            } 
-			else if (code[j].op == "j=-" || code[j].op == "j!=" || code[j].op == "j>=" || 
-			         code[j].op == "j<=" || code[j].op == "j<" || code[j].op == "j>") {
+            } else if (code[j].op == "j=-" || code[j].op == "j!=" || code[j].op == "j>=" ||
+                       code[j].op == "j<=" || code[j].op == "j<" || code[j].op == "j>") {
                 baseblock_start.push(atoi(code[j].des.c_str()));
                 if (j + 1 < funcblock_end) {
                     baseblock_start.push(j + 1);
                 }
-            } 
-			else if ((code[j].op == "return" || code[j].op == "call") && j + 1 < funcblock_end) {
+            } else if ((code[j].op == "return" || code[j].op == "call") && j + 1 < funcblock_end) {
                 baseblock_start.push(j + 1);
             }
         }
@@ -90,8 +88,7 @@ void IRGenerator::divide_block(vector<pair<int, string> > func_start) {
             if (first_block) {
                 block.name = func_start[i].second;
                 first_block = false;
-            } 
-            else {
+            } else {
                 block.name = get_block_name();
                 start_label[start] = block.name;
             }
@@ -101,24 +98,23 @@ void IRGenerator::divide_block(vector<pair<int, string> > func_start) {
             block.codes.clear();
         }
 
-        for (unsigned int j =0; j < funcblock.size(); ++j) {
+        for (unsigned int j = 0; j < funcblock.size(); ++j) {
             int codes_size = funcblock[j].codes.size();
             Quaternion lastCode = funcblock[j].codes[codes_size - 1];
             funcblock[j].next2 = -1;
             if (lastCode.op == "j") {
                 funcblock[j].next1 = start_block[atoi(lastCode.des.c_str())];
                 funcblock[j].codes[codes_size - 1].des = start_label[atoi(lastCode.des.c_str())];
-            } 
-			else if (lastCode.op == "j=-" || lastCode.op == "j!=" || lastCode.op == "j>=" || 
-					 lastCode.op == "j<=" || lastCode.op == "j<" || lastCode.op == "j>") {
+            } else if (lastCode.op == "j=-" || lastCode.op == "j!=" || lastCode.op == "j>=" ||
+                       lastCode.op == "j<=" || lastCode.op == "j<" || lastCode.op == "j>") {
                 funcblock[j].next1 = j + 1;
-                funcblock[j].next2 = (funcblock[j].next1 == start_block[atoi(lastCode.des.c_str())]) ? -1 : start_block[atoi(lastCode.des.c_str())];
+                funcblock[j].next2 = (funcblock[j].next1 == start_block[atoi(lastCode.des.c_str())]) ? -1
+                                                                                                     : start_block[atoi(
+                                lastCode.des.c_str())];
                 funcblock[j].codes[codes_size - 1].des = start_label[atoi(lastCode.des.c_str())];
-            } 
-			else if (lastCode.op == "return") {
+            } else if (lastCode.op == "return") {
                 funcblock[j].next1 = -1;
-            } 
-			else {
+            } else {
                 funcblock[j].next1 = j + 1;
             }
         }
@@ -127,22 +123,22 @@ void IRGenerator::divide_block(vector<pair<int, string> > func_start) {
 }
 
 map<string, vector<Block> > IRGenerator::get_func_blocks() {
-	return func_blocks;
+    return func_blocks;
 }
 
-void Quaternion::output(ostream& out) {
-	out << "(" << op << "," << src1 << "," << src2 << "," << des << ")";
-	for(int i=0;i<3;++i) {
-		out << "(";
-		if (info[i].pending == -1)
-			out << "^";
-		else
-			out << info[i].pending;
-		out << ",";
-		if (info[i].active)
-			out << "y";
-		else
-			out << "^";
-		out << ")";
-	}
+void Quaternion::output(ostream &out) {
+    out << "(" << op << "," << src1 << "," << src2 << "," << des << ")";
+    for (int i = 0; i < 3; ++i) {
+        out << "(";
+        if (info[i].pending == -1)
+            out << "^";
+        else
+            out << info[i].pending;
+        out << ",";
+        if (info[i].active)
+            out << "y";
+        else
+            out << "^";
+        out << ")";
+    }
 }

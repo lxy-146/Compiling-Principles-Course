@@ -1,0 +1,3 @@
+D:/github/Compiling-Principles-Course/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+D:/github/Compiling-Principles-Course/cmake-build-debug/CMakeFiles/Compiling_Principles_Course.dir
+D:/github/Compiling-Principles-Course/cmake-build-debug/CMakeFiles/edit_cache.dir

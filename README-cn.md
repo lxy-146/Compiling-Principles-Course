@@ -61,3 +61,10 @@
 [MIT](https://github.com/teamwong111/Compiling-Principles-Course/blob/main/LICENSE)
 
 ---
+
+
+D:\github\Compiling-Principles-Course\resources\right_test.txt
+D:\github\Compiling-Principles-Course\resources\1.txt
+D:\github\Compiling-Principles-Course\resources\productions.txt
+D:\github\Compiling-Principles-Course\resources\2.txt
+D:\github\Compiling-Principles-Course\resources\3.txt

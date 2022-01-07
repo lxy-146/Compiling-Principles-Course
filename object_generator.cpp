@@ -108,7 +108,7 @@ void ObjectGenerator::block_addinfo(map<string, vector<Block> > funcBlocks) {
 }
 
 void ObjectGenerator::generate_codes() {
-	object_codes.push_back("lui $sp,0x1001");
+    object_codes.push_back("lui $sp,0x1001");
 	object_codes.push_back("j main");
 	for (auto& fb : func_blocks) {
 		var_storepos.clear();
@@ -172,7 +172,9 @@ void ObjectGenerator::generate_base_block() {
 }
 
 void ObjectGenerator::generate_quaternion(int &arg_num, list<pair<string, bool> > &par_list) {
-	if (present_quaternion.op[0] != 'j' && present_quaternion.op != "call") {
+    cout<<present_quaternion.op<<" "<<present_quaternion.src1<<" "<<present_quaternion.src2<<" "<<present_quaternion.des<<endl;
+
+    if (present_quaternion.op[0] != 'j' && present_quaternion.op != "call") {
 		if (is_var(present_quaternion.src1) && Avalue[present_quaternion.src1].empty()) {
 			cout << (string("变量") + present_quaternion.src1 + "在引用前未赋值");
 		}
@@ -262,10 +264,22 @@ void ObjectGenerator::generate_quaternion(int &arg_num, list<pair<string, bool> 
 		if (!present_quaternion.info[0].active) {
 			release_var(present_quaternion.src1);
 		}
+//		cout<<present_quaternion.info[1].active<<' '<<present_quaternion.src2<<endl;
 		if (!present_quaternion.info[1].active) {
 			release_var(present_quaternion.src2);
 		}
 	}
+    for(auto item:free_register){
+        cout<<item<<" ";
+    }
+    cout<<endl;
+    for(auto item:Rvalue["$s7"]){
+        cout<<item<<" ";
+    }
+    cout<<endl;
+    for(int i=0;i<3;i++){
+        cout<<i<<" "<<present_quaternion.info[i].pending<<" "<<present_quaternion.info[i].active<<endl;
+    }
 }
 
 void ObjectGenerator::store_oul_var(set<string> outl) {
@@ -300,10 +314,13 @@ void ObjectGenerator::store_reg_var(string reg, string var) {
 }
 
 void ObjectGenerator::release_var(string var) {
-	for (auto& a_var : Avalue[var]) {
+    for (auto& a_var : Avalue[var]) {
 		if (a_var[0] == '$') {
+//            for(const auto& t:Rvalue[a_var])
 			Rvalue[a_var].erase(var);
-			if (Rvalue[a_var].size() == 0 && (a_var)[1] == 's') {
+//            if(Rvalue[a_var].count(var)==0)
+//                cout<<var<<endl;
+			if (Rvalue[a_var].size() == 0 && a_var[1] == 's') {
 				free_register.push_back(a_var);
 			}
 		}
@@ -315,6 +332,14 @@ string ObjectGenerator::allocate_des_reg() {
 	//A:=B op C
 	if (!is_num(present_quaternion.src1)) {
 		for (auto& r_var : Avalue[present_quaternion.src1]) {
+		    cout<<"qwq"<<endl;
+		    if(r_var[0]=='$'){
+		        for(auto item:Rvalue[r_var]){
+		            cout<<item<<" ";
+		        }
+		        cout<<endl;
+		        cout<<r_var<<endl;
+		    }
 			if (r_var[0] == '$' && Rvalue[r_var].size() == 1) {//如果B的现行值在某个寄存器Ri中，RVALUE[Ri]中只包含B
 				if (present_quaternion.des == present_quaternion.src1 || !present_quaternion.info[0].active) {//如果A,B是同一标识符或B以后不活跃
 					Avalue[present_quaternion.des].insert(r_var);
@@ -324,33 +349,18 @@ string ObjectGenerator::allocate_des_reg() {
 			}
 		}
 	}
-
+    cout<<"***";
+	for(auto item:free_register){
+	    cout<<item<<" ";
+	}
+	cout<<endl;
 	string ret = allocate_src_reg();
 	Avalue[present_quaternion.des].insert(ret);
 	Rvalue[ret].insert(present_quaternion.des);
 	return ret;
 }
 
-string ObjectGenerator::allocate_src_reg(string var) {
-	if (is_num(var)) {
-		string ret = allocate_src_reg();
-		object_codes.push_back(string("addi ") + ret + " $zero " + var);
-		return ret;
-	}
 
-	for (auto& r_var : Avalue[var]) {
-		if (r_var[0] == '$') {//如果变量已经保存在某个寄存器中
-			return r_var;//直接返回该寄存器
-		}
-	}
-
-	//如果该变量没有在某个寄存器中
-	string ret = allocate_src_reg();
-	object_codes.push_back(string("lw ") + ret + " " + to_string(var_storepos[var]) + "($sp)");
-	Avalue[var].insert(ret);
-	Rvalue[ret].insert(var);
-	return ret;
-}
 
 string ObjectGenerator::allocate_src_reg() {
 	//如果有尚未分配的寄存器，则从中选取一个Ri为所需要的寄存器R
@@ -360,7 +370,6 @@ string ObjectGenerator::allocate_src_reg() {
 		free_register.pop_back();
 		return ret;
 	}
-
 	// 从已分配的寄存器中选取一个Ri为所需要的寄存器R。最好使得Ri满足以下条件：
 	// 占用Ri的变量的值也同时存放在该变量的贮存单元中或者在基本块中要在最远的将来才会引用到或不会引用到。
 
@@ -427,6 +436,27 @@ string ObjectGenerator::allocate_src_reg() {
 	}
 	Rvalue[ret].clear();//清空ret寄存器中保存的变量
 	return ret;
+}
+
+string ObjectGenerator::allocate_src_reg(string var) {
+    if (is_num(var)) {
+        string ret = allocate_src_reg();
+        object_codes.push_back(string("addi ") + ret + " $zero " + var);
+        return ret;
+    }
+
+    for (auto& r_var : Avalue[var]) {
+        if (r_var[0] == '$') {//如果变量已经保存在某个寄存器中
+            return r_var;//直接返回该寄存器
+        }
+    }
+
+    //如果该变量没有在某个寄存器中
+    string ret = allocate_src_reg();
+    object_codes.push_back(string("lw ") + ret + " " + to_string(var_storepos[var]) + "($sp)");
+    Avalue[var].insert(ret);
+    Rvalue[ret].insert(var);
+    return ret;
 }
 
 void ObjectGenerator::output_blocks(ostream& out) {
